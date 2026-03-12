@@ -88,6 +88,8 @@ typings/
 # Claude files
 .claude.json
 .claude/
+CLAUDE.md
+PROJECT_STATUS.md
 
 # Vite
 .vite/
