@@ -18,9 +18,7 @@ The tradeoff is that binaries are platform-specific — you need a separate buil
 calculator-rust/
 ├── manifest.json       # server.type = "binary"
 ├── Cargo.toml          # Rust project
-├── Dockerfile          # Build via Docker
 ├── .mcpbignore         # Exclude source from bundle
-├── .gitignore          # Exclude build artifacts
 └── src/
     └── main.rs         # Calculator MCP server (~80 LOC)
 ```
@@ -29,25 +27,13 @@ After building, the `server/` directory is created with the compiled binary.
 
 ## Building
 
-### Native (requires Rust 1.85+)
+Requires [Rust](https://rustup.rs/) 1.85+.
 
 ```bash
 cd examples/calculator-rust
 cargo build --release
 mkdir -p server
 cp target/release/mcp-calculator server/
-```
-
-### Docker (no local Rust required)
-
-```bash
-cd examples/calculator-rust
-docker build -t mcp-calculator .
-# Extract the binary (linux only)
-docker create --name calc mcp-calculator
-docker cp calc:/mcp-calculator server/mcp-calculator
-docker rm calc
-chmod +x server/mcp-calculator
 ```
 
 ## Packing
