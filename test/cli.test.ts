@@ -99,6 +99,10 @@ describe("DXT CLI", () => {
         0x45, 0x4e, 0x44, 0xae, 0x42, 0x60, 0x82,
       ]);
       fs.writeFileSync(join(testDir, "icon.png"), validPngBuffer);
+
+      // Create entry point file referenced by test manifests
+      fs.mkdirSync(join(testDir, "server"), { recursive: true });
+      fs.writeFileSync(join(testDir, "server", "index.js"), "// fixture");
     });
 
     afterAll(() => {
@@ -196,6 +200,9 @@ describe("DXT CLI", () => {
       fs.writeFileSync(join(tempDir, "file1.txt"), "hello");
       fs.mkdirSync(join(tempDir, "subdir"));
       fs.writeFileSync(join(tempDir, "subdir", "file2.txt"), "world");
+      // Create entry point file referenced by manifest
+      fs.mkdirSync(join(tempDir, "server"), { recursive: true });
+      fs.writeFileSync(join(tempDir, "server", "index.js"), "// fixture");
     });
 
     afterAll(() => {
@@ -290,6 +297,10 @@ describe("DXT CLI", () => {
             },
           }),
         );
+
+        // Create entry point file referenced by manifest
+        fs.mkdirSync(join(tempExecDir, "server"), { recursive: true });
+        fs.writeFileSync(join(tempExecDir, "server", "index.js"), "// fixture");
 
         // Create an executable script
         const executableScript = join(tempExecDir, "run-script.sh");

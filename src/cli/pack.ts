@@ -83,7 +83,11 @@ export async function packExtension({
 
   // Validate manifest first
   logger.log("Validating manifest...");
-  if (!validateManifest(manifestPath)) {
+  if (
+    !validateManifest(manifestPath, {
+      projectDir: resolvedPath,
+    })
+  ) {
     logger.error("ERROR: Cannot pack extension with invalid manifest");
     return false;
   }
