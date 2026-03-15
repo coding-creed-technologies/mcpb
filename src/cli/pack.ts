@@ -22,6 +22,7 @@ interface PackOptions {
   extensionPath: string;
   outputPath?: string;
   silent?: boolean;
+  manifestPath?: string;
 }
 
 function formatFileSize(bytes: number): string {
@@ -50,6 +51,7 @@ export async function packExtension({
   extensionPath,
   outputPath,
   silent,
+  manifestPath: customManifestPath,
 }: PackOptions): Promise<boolean> {
   const resolvedPath = resolve(extensionPath);
   const logger = getLogger({ silent });
@@ -60,9 +62,18 @@ export async function packExtension({
     return false;
   }
 
-  // Check if manifest exists
-  const manifestPath = join(resolvedPath, "manifest.json");
+  // Resolve manifest path
+  const manifestPath = customManifestPath
+    ? resolve(customManifestPath)
+    : join(resolvedPath, "manifest.json");
+
   if (!existsSync(manifestPath)) {
+    if (customManifestPath) {
+      // When --manifest is explicitly provided, error immediately
+      logger.error(`ERROR: Manifest file not found: ${customManifestPath}`);
+      return false;
+    }
+
     logger.log(`No manifest.json found in ${extensionPath}`);
     const shouldInit = await confirm({
       message: "Would you like to create a manifest.json file?",
@@ -134,6 +145,15 @@ export async function packExtension({
       {},
       mcpbIgnorePatterns,
     );
+
+    // When using a custom manifest path, inject the manifest into the bundle
+    if (customManifestPath) {
+      const manifestStat = statSync(manifestPath);
+      files["manifest.json"] = {
+        data: readFileSync(manifestPath),
+        mode: manifestStat.mode,
+      };
+    }
 
     // Print package header
     logger.log(`\n📦  ${manifest.name}@${manifest.version}`);

@@ -258,6 +258,84 @@ describe("DXT CLI", () => {
       expect(originalFile2).toEqual(unpackedFile2);
     });
 
+    it("should pack with --manifest pointing to a separate directory", () => {
+      const projectDir = join(__dirname, "temp-manifest-project");
+      const manifestDir = join(__dirname, "temp-manifest-separate");
+      const manifestPackedPath = join(__dirname, "test-manifest-flag.mcpb");
+
+      try {
+        // Create project directory with source files (no manifest)
+        fs.mkdirSync(join(projectDir, "server"), { recursive: true });
+        fs.writeFileSync(
+          join(projectDir, "server", "index.js"),
+          "console.log('hello');",
+        );
+
+        // Create separate manifest directory
+        fs.mkdirSync(manifestDir, { recursive: true });
+        fs.writeFileSync(
+          join(manifestDir, "manifest.json"),
+          JSON.stringify({
+            manifest_version: DEFAULT_MANIFEST_VERSION,
+            name: "Test Separate Manifest",
+            version: "1.0.0",
+            description: "Test with separate manifest",
+            author: { name: "MCPB" },
+            server: {
+              type: "node",
+              entry_point: "server/index.js",
+              mcp_config: { command: "node" },
+            },
+          }),
+        );
+
+        const result = execSync(
+          `node ${cliPath} pack ${projectDir} ${manifestPackedPath} --manifest ${join(manifestDir, "manifest.json")}`,
+          { encoding: "utf-8" },
+        );
+
+        expect(fs.existsSync(manifestPackedPath)).toBe(true);
+        expect(result).toContain("Validating manifest");
+      } finally {
+        fs.rmSync(projectDir, { recursive: true, force: true });
+        fs.rmSync(manifestDir, { recursive: true, force: true });
+        if (fs.existsSync(manifestPackedPath)) {
+          fs.unlinkSync(manifestPackedPath);
+        }
+      }
+    });
+
+    it("should fail with --manifest pointing to nonexistent file", () => {
+      const projectDir = join(__dirname, "temp-manifest-missing-project");
+
+      try {
+        fs.mkdirSync(projectDir, { recursive: true });
+        fs.writeFileSync(join(projectDir, "index.js"), "console.log('hello');");
+
+        expect(() => {
+          execSync(
+            `node ${cliPath} pack ${projectDir} /tmp/out.mcpb --manifest /nonexistent/manifest.json`,
+            { encoding: "utf-8", stdio: "pipe" },
+          );
+        }).toThrow();
+
+        try {
+          execSync(
+            `node ${cliPath} pack ${projectDir} /tmp/out.mcpb --manifest /nonexistent/manifest.json`,
+            { encoding: "utf-8", stdio: "pipe" },
+          );
+        } catch (error: unknown) {
+          const execError = error as { stdout?: Buffer; stderr?: Buffer };
+          const output =
+            (execError.stdout?.toString() || "") +
+            (execError.stderr?.toString() || "");
+          expect(output).toContain("Manifest file not found");
+        }
+      } finally {
+        fs.rmSync(projectDir, { recursive: true, force: true });
+      }
+    });
+
     it("should preserve executable file permissions after packing and unpacking", () => {
       // Skip this test on Windows since it doesn't support Unix permissions
       if (process.platform === "win32") {
