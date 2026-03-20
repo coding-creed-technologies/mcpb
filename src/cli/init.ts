@@ -59,37 +59,37 @@ export function getDefaultRepositoryUrl(packageData: PackageJson): string {
 }
 
 export function getDefaultBasicInfo(
-  packageData: PackageJson,
+  packageDataBI: PackageJson,
   resolvedPath: string,
 ) {
-  const name = packageData.name || basename(resolvedPath);
-  const authorName = getDefaultAuthorName(packageData) || "Unknown Author";
+  const name = packageDataBI.name || basename(resolvedPath);
+  const authorName = getDefaultAuthorName(packageDataBI) || "Unknown Author";
   const displayName = name;
-  const version = packageData.version || "1.0.0";
-  const description = packageData.description || "A MCPB bundle";
+  const version = packageDataBI.version || "1.0.0";
+  const description = packageDataBI.description || "A MCPB bundle";
 
   return { name, authorName, displayName, version, description };
 }
 
-export function getDefaultAuthorInfo(packageData: PackageJson) {
+export function getDefaultAuthorInfo(packageDataAI: PackageJson) {
   return {
-    authorEmail: getDefaultAuthorEmail(packageData),
-    authorUrl: getDefaultAuthorUrl(packageData),
+    authorEmail: getDefaultAuthorEmail(packageDataAI),
+    authorUrl: getDefaultAuthorUrl(packageDataAI),
   };
 }
 
-export function getDefaultServerConfig(packageData?: PackageJson) {
+export function getDefaultServerConfig(packageDataSC?: PackageJson) {
   const serverType = "node" as const;
-  const entryPoint = getDefaultEntryPoint(serverType, packageData);
+  const entryPoint = getDefaultEntryPoint(serverType, packageDataSC);
   const mcp_config = createMcpConfig(serverType, entryPoint);
 
   return { serverType, entryPoint, mcp_config };
 }
 
-export function getDefaultOptionalFields(packageData: PackageJson) {
+export function getDefaultOptionalFields(packageDataOF: PackageJson) {
   return {
     keywords: "",
-    license: packageData.license || "MIT",
+    license: packageDataOF.license || "MIT",
     repository: undefined,
   };
 }
@@ -141,10 +141,10 @@ export function getDefaultEntryPoint(
 }
 
 export async function promptBasicInfo(
-  packageData: PackageJson,
+  packageDataPBI: PackageJson,
   resolvedPath: string,
 ) {
-  const defaultName = packageData.name || basename(resolvedPath);
+  const defaultName = packageDataPBI.name || basename(resolvedPath);
 
   const name = await input({
     message: "Extension name:",
@@ -154,7 +154,7 @@ export async function promptBasicInfo(
 
   const authorName = await input({
     message: "Author name:",
-    default: getDefaultAuthorName(packageData),
+    default: getDefaultAuthorName(packageDataPBI),
     validate: (value) => value.trim().length > 0 || "Author name is required",
   });
 
@@ -165,7 +165,7 @@ export async function promptBasicInfo(
 
   const version = await input({
     message: "Version:",
-    default: packageData.version || "1.0.0",
+    default: packageDataPBI.version || "1.0.0",
     validate: (value) => {
       if (!value.trim()) return "Version is required";
       if (!/^\d+\.\d+\.\d+/.test(value)) {
@@ -177,7 +177,7 @@ export async function promptBasicInfo(
 
   const description = await input({
     message: "Description:",
-    default: packageData.description || "",
+    default: packageDataPBI.description || "",
     validate: (value) => value.trim().length > 0 || "Description is required",
   });
 
